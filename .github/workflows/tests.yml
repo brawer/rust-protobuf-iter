@@ -45,3 +45,31 @@ jobs:
       run: cargo clippy
     - name: Upload test coverage to Coveralls
       uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b  # v2.3.6
+
+  sast:
+    name: Run GitHub CodeQL for Static Application Security Testing (SAST)
+    runs-on: ubuntu-latest
+
+    matrix:
+      include:
+      - language: actions
+        build-mode: none
+      - language: rust
+        build-mode: none
+
+    permissions:
+      packages: read  # to fetch internal CodeQL packs
+      security-events: write  # to report any found problems
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+    - name: Initialize GitHub CodeQL
+      uses: github/codeql-action/init@25a224b8085c21d4d61b7fc051468805fc3ac490 # v2.24.0
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@25a224b8085c21d4d61b7fc051468805fc3ac490  # v2.24.0
+      with:
+        category: "/language:${{matrix.language}}"
